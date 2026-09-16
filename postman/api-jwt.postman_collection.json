@@ -1,0 +1,274 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+    "name": "api-jwt",
+    "description": "Coleccion para probar rapidamente la API de tareas (auth JWT + API Key). Importar en Postman y ejecutar Registro -> Login (autosetea token) -> carpetas v1 y v2.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "default"
+    },
+    {
+      "key": "apiKey",
+      "value": "4511e0e481975c4afeefbd5c72a9f4e11c7aacadd112ad0b84c254d06ad08f53",
+      "type": "default"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "tareaId",
+      "value": "1",
+      "type": "default"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Registro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/registro",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "registro"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Admin Demo\",\n  \"email\": \"admin@demo.com\",\n  \"password\": \"123456\",\n  \"rol\": \"admin\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    console.log('Token guardado en variable de coleccion');",
+                  "}",
+                  "pm.test('Login devuelve token', function () {",
+                  "    pm.expect(json).to.have.property('token');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@demo.com\",\n  \"password\": \"123456\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "v1 - API Key",
+      "item": [
+        {
+          "name": "Listar tareas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/tareas",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "tareas"]
+            }
+          }
+        },
+        {
+          "name": "Crear tarea",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/tareas",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "tareas"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Tarea creada desde v1\",\n  \"usuarioId\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Sin API Key (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/tareas",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "tareas"]
+            }
+          }
+        },
+        {
+          "name": "API Key invalida (401)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "invalida"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/tareas",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "tareas"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "v2 - JWT",
+      "item": [
+        {
+          "name": "Listar mis tareas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v2/tareas",
+              "host": ["{{baseUrl}}"],
+              "path": ["v2", "tareas"]
+            }
+          }
+        },
+        {
+          "name": "Crear tarea",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v2/tareas",
+              "host": ["{{baseUrl}}"],
+              "path": ["v2", "tareas"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Tarea creada desde v2 con JWT\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Actualizar tarea",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v2/tareas/{{tareaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v2", "tareas", "{{tareaId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Tarea actualizada\",\n  \"completada\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar tarea",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v2/tareas/{{tareaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v2", "tareas", "{{tareaId}}"]
+            }
+          }
+        },
+        {
+          "name": "Sin token (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v2/tareas",
+              "host": ["{{baseUrl}}"],
+              "path": ["v2", "tareas"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
